@@ -9,19 +9,25 @@ void yyerror(const char *s);
 
 %token T_DIGIT 
 %token T_PLUS
+%token T_EQUALS
+
 %left T_PLUS // Forca o parser a ir para a direita da arvore ao ver uma soma
-%start calculation
+%start calculation //Diz por qual producao iniciar
 
 %%
 // Inicio das Producoes
+
 calculation : 
-|calculation statment
+|calculation statment 
+
 ;
 
-statment : T_DIGIT  {$$ = $1; }
-|statment T_PLUS statment { $$ = $1 + $3; }
-|"=" { printf("\tResult: %i\n", $1); }
+statment : T_DIGIT  { $$ = $1; }
+|statment '+' statment { $$ = $1 + $3; }
+|T_EQUALS { printf("=%d", $1); }
+
 ;
+
 //Fim das Producoes
 %%
 

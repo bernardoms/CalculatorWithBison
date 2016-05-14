@@ -1,13 +1,15 @@
 %{
 #define T_DIGIT 258
-#define T_PLUS 258
+#define T_PLUS 259
+#define T_EQUALS 260
 extern int yylval;
 %}
 /* Definições */
-DIGITS [0-9]+;
+
 %%
-{DIGITS} { yylval = atoi(yytext); return T_DIGIT; }
-"+" {return T_PLUS;}
+[0-9]+ { yylval = atoi(yytext); return T_DIGIT; } // Recebe digitos de 0-9, e passa para o parcer
+"+" { return T_PLUS; }
+"=" { return T_EQUALS; }
 <<EOF>> {return 0;}
 
 %%
