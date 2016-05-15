@@ -1,6 +1,9 @@
 //Trabalho de Compiladores - CEFET - RJ Por Bernardo Monteiro da Silva
 
+
+
 %{
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -8,8 +11,9 @@ int yylex();
 void yyerror(char *);
 extern int yylineno;
 extern char* yytext;
-int transformaBin(int val);
+void transformaBin(int val);
 int binaryToDecimal(int val);
+
 %}
  
 
@@ -36,42 +40,35 @@ $3 = terceiro elemento do stack
 // Inicio das Producoes
 
 calculation: 
-statment { transformaBin($$) }
+  statment { transformaBin($$); }
 | T_SAIDA { printf("Saindo..."); exit(0); }
-|calculation statment
 ;
 
 statment: T_DIGIT  { $$ = $1; }
 | statment T_PLUS T_DIGIT { $$ = binaryToDecimal($1) + binaryToDecimal($3) ; }
-| statment T_MINUS T_DIGIT { $$ = $1 - $3; }
-| statment T_MULT T_DIGIT { $$ = $1 * $3; }
-| statment T_DIV T_DIGIT { $$ = $1 / $3; }
+| statment T_MINUS T_DIGIT { $$ = binaryToDecimal($1) - binaryToDecimal($3); }
+| statment T_MULT T_DIGIT { $$ = binaryToDecimal($1) * binaryToDecimal($3); }
+| statment T_DIV T_DIGIT { $$ = binaryToDecimal($1) / binaryToDecimal($3); }
 ;
 
 
 
 //Fim das Producoes
 %%
+
 //Transforma decimal para binario
-int transformaBin(int val){
-  int  c, k;
- 
-  printf(" =");
- 
-  for (c = 31; c >= 0; c--)
-  {
-    k = val >> c;
- 
-    if (k & 1)
-      printf("1");
-    else
-      printf("0");
-  }
- 
-  printf("\n");
- 
-  return 0;
+void transformaBin(int val){
+    int rem, i=1, binario=0;
+    while (val!=0)
+    {
+        rem=val%2;
+        val/=2;
+        binario+=rem*i;
+        i*=10;
+    }
+    printf("Result = %d", binario);
 }
+
 //Transforma de binario para decimal
 int binaryToDecimal(int val)
 {
@@ -99,5 +96,5 @@ int yywrap(void){ //Funcao necessaria para nao dar erro de referencia ao yywrap
 
 void yyerror(char* errmsg)//Printa msg de erro
 {
-	fprintf(stderr, "%d: Erro de Sintaxe: '%s' na linha '%s', yylval=%u\n", yylineno, errmsg, yytext, yylval);
+	fprintf(stderr, "%d: Erro do Tipo: '%s' na linha '%s'\n", yylineno, errmsg, yytext);
 }
