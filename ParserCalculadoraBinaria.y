@@ -3,10 +3,11 @@
 
 
 %{
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "ParserCalculadoraBinaria.tab.h"
+
 int yylex();
 void yyerror(char *);
 extern int yylineno;
@@ -17,19 +18,22 @@ int binaryToDecimal(int val);
 %}
  
 
-%token T_DIGIT 
-%token T_PLUS
-%token T_EQUALS
+%token T_DIGIT
+%token T_PLUS T_MINUS
+%token T_DIV T_MULT 
+%token T_NEWLINE
 %token T_SAIDA
-%token T_MINUS
-%token T_MULT
-%token T_DIV
 
 
-//%right T_PLUS // Forca o parser a ir para a direita da arvore ao ver uma soma
+
+
+
+%left T_PLUS T_MINUS T_MULT T_DIV// Forca o parser a ir para a direita da arvore ao ver uma soma
 %start calculation //Diz por qual producao iniciar
 
 %%
+
+
 
 /* Pequena Explicacao dos simbolos utilizados pelo bison:
 $$ = inicio do stack
@@ -37,19 +41,34 @@ $1 = primeiro elemento do stack
 $3 = terceiro elemento do stack
 */
 
+/* Trecho de codigo para debugar, isso aqui salva vidas!!!!
+#if YYDEBUG == 1
+	extern int yydebug;
+	yydebug = 1;
+	#endif
+*/
+
 // Inicio das Producoes
 
 calculation: 
-  statment { transformaBin($$); }
-| T_SAIDA { printf("Saindo..."); exit(0); }
+ |calculation line 
 ;
 
-statment: T_DIGIT  { $$ = $1; }
-| statment T_PLUS T_DIGIT { $$ = binaryToDecimal($1) + binaryToDecimal($3) ; }
-| statment T_MINUS T_DIGIT { $$ = binaryToDecimal($1) - binaryToDecimal($3); }
-| statment T_MULT T_DIGIT { $$ = binaryToDecimal($1) * binaryToDecimal($3); }
-| statment T_DIV T_DIGIT { $$ = binaryToDecimal($1) / binaryToDecimal($3); }
+line:
+	T_NEWLINE
+	|expr T_NEWLINE {transformaBin($$)};
+	|T_SAIDA { printf("Saindo..."); exit(0); }
+	;
+	
+expr: 
+	T_DIGIT  { $$ = $1; }
+| expr T_PLUS expr { $$ = binaryToDecimal($1) + binaryToDecimal($3) ; }
+| expr T_MINUS expr { $$ = binaryToDecimal($1) - binaryToDecimal($3); }
+| expr T_MULT expr { $$ = binaryToDecimal($1) * binaryToDecimal($3); }
+| expr T_DIV expr { $$ = binaryToDecimal($1) / binaryToDecimal($3); }
 ;
+
+
 
 
 
@@ -66,7 +85,7 @@ void transformaBin(int val){
         binario+=rem*i;
         i*=10;
     }
-    printf("Result = %d", binario);
+    printf("Result = %d\n", binario);
 }
 
 //Transforma de binario para decimal
@@ -85,6 +104,7 @@ int binaryToDecimal(int val)
 }
 
 int main() {
+	
     yyparse();
     return 0;
     
